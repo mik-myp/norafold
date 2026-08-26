@@ -1,0 +1,50 @@
+.sidebarHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+  padding: 0.25rem;
+}
+
+.sidebarActions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.sidebarHide {
+  width: fit-content;
+  max-width: 10rem;
+  min-width: 0;
+  flex: 0 1 auto;
+  overflow: hidden;
+  transition: max-width 200ms ease-linear;
+}
+
+.sidebarSearch {
+  max-width: 8rem;
+}
+
+:global(.group[data-state="collapsed"]) {
+  .sidebarHide {
+    width: 0;
+    max-width: 0;
+    pointer-events: none;
+  }
+
+  .sidebarHead {
+    justify-content: center;
+    gap: 0;
+  }
+
+  .sidebarActions {
+    gap: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebarHide {
+    transition: none;
+  }
+}

@@ -3,7 +3,6 @@ import type { LucideIcon } from "lucide-react";
 import {
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -12,7 +11,7 @@ import {
 
 type NavItem = {
   title: string;
-  to: "/" | "/rag";
+  to: "/" | "/knowledge";
   icon: LucideIcon;
   exact?: boolean;
 };
@@ -22,10 +21,9 @@ export function NavMain({ items }: { items: NavItem[] }) {
   const { isMobile, setOpenMobile } = useSidebar();
 
   return (
-    <SidebarGroup>
-      <SidebarGroupLabel>工作区</SidebarGroupLabel>
+    <SidebarGroup className="sidebar-primary-nav">
       <SidebarGroupContent>
-        <SidebarMenu>
+        <SidebarMenu className="gap-1">
           {items.map((item) => {
             const isActive = Boolean(
               matchRoute({

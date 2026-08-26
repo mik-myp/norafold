@@ -11,7 +11,8 @@
 import { Route as rootRouteImport } from "./routes/__root";
 import { Route as AppRouteImport } from "./routes/_app";
 import { Route as AppIndexRouteImport } from "./routes/_app/index";
-import { Route as AppRagRouteImport } from "./routes/_app/rag";
+import { Route as AppKnowledgeRouteImport } from "./routes/_app/knowledge";
+import { Route as AppSettingsRouteImport } from "./routes/_app/settings";
 
 const AppRoute = AppRouteImport.update({
   id: "/_app",
@@ -22,32 +23,40 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: "/",
   getParentRoute: () => AppRoute,
 } as any);
-const AppRagRoute = AppRagRouteImport.update({
-  id: "/rag",
-  path: "/rag",
+const AppKnowledgeRoute = AppKnowledgeRouteImport.update({
+  id: "/knowledge",
+  path: "/knowledge",
+  getParentRoute: () => AppRoute,
+} as any);
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: "/settings",
+  path: "/settings",
   getParentRoute: () => AppRoute,
 } as any);
 
 export interface FileRoutesByFullPath {
   "/": typeof AppIndexRoute;
-  "/rag": typeof AppRagRoute;
+  "/knowledge": typeof AppKnowledgeRoute;
+  "/settings": typeof AppSettingsRoute;
 }
 export interface FileRoutesByTo {
-  "/rag": typeof AppRagRoute;
+  "/knowledge": typeof AppKnowledgeRoute;
+  "/settings": typeof AppSettingsRoute;
   "/": typeof AppIndexRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
   "/_app": typeof AppRouteWithChildren;
-  "/_app/rag": typeof AppRagRoute;
+  "/_app/knowledge": typeof AppKnowledgeRoute;
+  "/_app/settings": typeof AppSettingsRoute;
   "/_app/": typeof AppIndexRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: "/" | "/rag";
+  fullPaths: "/" | "/knowledge" | "/settings";
   fileRoutesByTo: FileRoutesByTo;
-  to: "/rag" | "/";
-  id: "__root__" | "/_app" | "/_app/rag" | "/_app/";
+  to: "/knowledge" | "/settings" | "/";
+  id: "__root__" | "/_app" | "/_app/knowledge" | "/_app/settings" | "/_app/";
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
@@ -70,23 +79,32 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AppIndexRouteImport;
       parentRoute: typeof AppRoute;
     };
-    "/_app/rag": {
-      id: "/_app/rag";
-      path: "/rag";
-      fullPath: "/rag";
-      preLoaderRoute: typeof AppRagRouteImport;
+    "/_app/knowledge": {
+      id: "/_app/knowledge";
+      path: "/knowledge";
+      fullPath: "/knowledge";
+      preLoaderRoute: typeof AppKnowledgeRouteImport;
+      parentRoute: typeof AppRoute;
+    };
+    "/_app/settings": {
+      id: "/_app/settings";
+      path: "/settings";
+      fullPath: "/settings";
+      preLoaderRoute: typeof AppSettingsRouteImport;
       parentRoute: typeof AppRoute;
     };
   }
 }
 
 interface AppRouteChildren {
-  AppRagRoute: typeof AppRagRoute;
+  AppKnowledgeRoute: typeof AppKnowledgeRoute;
+  AppSettingsRoute: typeof AppSettingsRoute;
   AppIndexRoute: typeof AppIndexRoute;
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppRagRoute: AppRagRoute,
+  AppKnowledgeRoute: AppKnowledgeRoute,
+  AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
 };
 

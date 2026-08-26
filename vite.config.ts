@@ -7,7 +7,13 @@ import { tanstackRouter } from "@tanstack/router-plugin/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
-  fmt: {},
+  fmt: {
+    sortTailwindcss: {
+      stylesheet: "./src/index.css",
+      functions: ["clsx", "cn"],
+      preserveWhitespace: false,
+    },
+  },
   lint: {
     plugins: ["react", "typescript", "oxc"],
     rules: {
