@@ -1,0 +1,26 @@
+{
+  "language": {
+    "change": "Change language",
+    "en": "English",
+    "label": "Language",
+    "zhCN": "简体中文"
+  },
+  "navigation": {
+    "home": "Home",
+    "knowledge": "Knowledge",
+    "settings": "Settings"
+  },
+  "notFound": {
+    "title": "Page not found"
+  },
+  "sidebar": {
+    "description": "Displays the mobile sidebar.",
+    "search": "Search",
+    "title": "Sidebar",
+    "toggle": "Toggle sidebar"
+  },
+  "theme": {
+    "dark": "Dark mode",
+    "light": "Light mode"
+  }
+}

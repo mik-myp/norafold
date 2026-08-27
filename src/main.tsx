@@ -6,6 +6,7 @@ import {
   createHashHistory,
   createRouter,
 } from "@tanstack/react-router";
+import "@/i18n";
 import { routeTree } from "./routeTree.gen";
 import "./index.css";
 import { ThemeProvider } from "@/components/theme-provider";

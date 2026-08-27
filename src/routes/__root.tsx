@@ -1,5 +1,6 @@
 import { Outlet, createRootRoute } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { useTranslation } from "react-i18next";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 export const Route = createRootRoute({
@@ -17,11 +18,13 @@ function RootComponent() {
 }
 
 function NotFoundComponent() {
+  const { t } = useTranslation();
+
   return (
     <main className="grid min-h-svh place-items-center p-6">
       <div className="text-center">
         <p className="text-sm text-muted-foreground">404</p>
-        <h1 className="mt-2 text-xl font-medium">页面不存在</h1>
+        <h1 className="mt-2 text-xl font-medium">{t("notFound.title")}</h1>
       </div>
     </main>
   );

@@ -32,5 +32,6 @@
   },
   "search.exclude": {
     "**/routeTree.gen.ts": true
-  }
+  },
+  "inlang.pathPattern": "./src/i18n/locales/{locale}/translation.json"
 }

@@ -5,9 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vp dev",
-    "build": "tsc -b && vp build",
+    "i18n:extract": "i18next-cli extract",
+    "i18n:check": "i18next-cli extract --dry-run --ci && i18next-cli status && i18next-cli lint",
+    "i18n:lint": "i18next-cli lint",
+    "i18n:status": "i18next-cli status",
+    "i18n:types": "i18next-cli types && vp fmt --write src/i18n/i18next.d.ts src/i18n/resources.d.ts",
     "lint": "vp lint",
-    "preview": "vp preview"
+    "preview": "vp preview",
+    "prepare": "vp config --no-agent"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
@@ -20,12 +25,15 @@
     "cmdk": "^1.1.1",
     "date-fns": "^4.4.0",
     "embla-carousel-react": "^8.6.0",
+    "i18next": "^26.4.0",
+    "i18next-browser-languagedetector": "^8.2.1",
     "input-otp": "^1.5.0",
     "lucide-react": "^1.34.0",
     "next-themes": "^0.4.6",
     "react": "^19.2.8",
     "react-day-picker": "^10.0.1",
     "react-dom": "^19.2.8",
+    "react-i18next": "^17.0.12",
     "react-resizable-panels": "^4.12.3",
     "recharts": "3.8.0",
     "shadcn": "^4.19.0",
@@ -45,6 +53,7 @@
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.1.0",
     "babel-plugin-react-compiler": "^1.0.0",
+    "i18next-cli": "^1.71.3",
     "less": "^4.9.0",
     "typescript": "~6.0.2",
     "vite": "catalog:",
@@ -54,6 +63,11 @@
     "packageManager": {
       "name": "pnpm",
       "version": "11.23.0",
+      "onFail": "download"
+    },
+    "runtime": {
+      "name": "node",
+      "version": "24.20.0",
       "onFail": "download"
     }
   }

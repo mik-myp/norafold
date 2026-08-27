@@ -1,0 +1,12 @@
+{
+  "$schema": "https://inlang.com/schema/project-settings",
+  "baseLocale": "zh-CN",
+  "locales": ["zh-CN", "en"],
+  "modules": ["https://cdn.jsdelivr.net/npm/@inlang/plugin-i18next@6.2.6/dist/index.js"],
+  "plugin.inlang.i18next": {
+    "pathPattern": {
+      "translation": "./src/i18n/locales/{locale}/translation.json"
+    },
+    "variableReferencePattern": ["{{", "}}"]
+  }
+}
