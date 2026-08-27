@@ -11,7 +11,7 @@ import { routeTree } from "./routeTree.gen";
 import "./index.css";
 import { ThemeProvider } from "@/components/theme-provider";
 
-const history = window.location.protocol === "file:" ? createHashHistory() : createBrowserHistory();
+const history = window.desktop ? createHashHistory() : createBrowserHistory();
 
 const router = createRouter({
   routeTree,
@@ -28,7 +28,7 @@ declare module "@tanstack/react-router" {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+    <ThemeProvider>
       <RouterProvider router={router} />
     </ThemeProvider>
   </StrictMode>,

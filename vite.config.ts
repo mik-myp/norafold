@@ -1,9 +1,5 @@
-import react, { reactCompilerPreset } from "@vitejs/plugin-react";
-import babel from "@rolldown/plugin-babel";
 import { defineConfig, lazyPlugins } from "vite-plus";
-import path from "path";
-import tailwindcss from "@tailwindcss/vite";
-import { tanstackRouter } from "@tanstack/router-plugin/vite";
+import { createRendererPlugins, rendererAlias } from "./vite.renderer.shared.js";
 
 const generatedRouteTree = "/src/routeTree.gen.ts";
 
@@ -33,7 +29,13 @@ function createStagedCommands(files: readonly string[]) {
 // https://vite.dev/config/
 export default defineConfig({
   fmt: {
-    ignorePatterns: ["src/routeTree.gen.ts"],
+    ignorePatterns: [
+      "src/routeTree.gen.ts",
+      ".vite/**",
+      "out/**",
+      "playwright-report/**",
+      "test-results/**",
+    ],
     sortTailwindcss: {
       stylesheet: "./src/index.css",
       functions: ["clsx", "cn"],
@@ -41,6 +43,7 @@ export default defineConfig({
     },
   },
   lint: {
+    ignorePatterns: [".vite/**", "out/**", "playwright-report/**", "test-results/**"],
     plugins: ["react", "typescript", "oxc"],
     rules: {
       "react/rules-of-hooks": "error",
@@ -71,13 +74,19 @@ export default defineConfig({
   },
   run: {
     cache: {
-      scripts: true,
+      scripts: false,
       tasks: true,
     },
     tasks: {
       build: {
         command: ["tsc -b", "vp build"],
-        input: [{ auto: true }, "!node_modules/.tmp/**/*.tsbuildinfo", "!dist/**"],
+        input: [
+          { auto: true },
+          "!node_modules/.tmp/**/*.tsbuildinfo",
+          "!.vite/**",
+          "!dist/**",
+          "!out/**",
+        ],
         output: ["dist/**"],
       },
       ci: {
@@ -85,20 +94,8 @@ export default defineConfig({
       },
     },
   },
-  plugins: lazyPlugins(() => [
-    tanstackRouter({
-      target: "react",
-      autoCodeSplitting: true,
-      quoteStyle: "double",
-      semicolons: true,
-    }),
-    react(),
-    tailwindcss(),
-    babel({ presets: [reactCompilerPreset()] }),
-  ]),
+  plugins: lazyPlugins(createRendererPlugins),
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
+    alias: rendererAlias,
   },
 });

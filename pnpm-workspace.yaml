@@ -1,9 +1,16 @@
 allowBuilds:
-  "@swc/core": set this to true or false
+  "@swc/core": false
+  electron: true
+  electron-winstaller: false
+blockExoticSubdeps: false
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@0.3.0
   vite-plus: 0.3.0
+nodeLinker: hoisted
 overrides:
+  extract-zip: npm:@electron-internal/extract-zip@1.0.5
+  tar: 7.5.21
+  tmp: 0.2.7
   vite@*: "catalog:"
 peerDependencyRules:
   allowAny:

@@ -1,18 +1,27 @@
 {
-  "name": "vite-project",
+  "name": "norafold",
   "version": "0.0.0",
   "private": true,
+  "description": "Norafold desktop application",
+  "author": "mikmyp",
   "type": "module",
+  "main": ".vite/build/main.cjs",
   "scripts": {
     "dev": "vp dev",
+    "lint": "vp lint",
+    "preview": "vp preview",
+    "prepare": "vp config --no-agent",
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "publish": "electron-forge publish",
+    "test:e2e": "playwright test",
+    "release:version": "node scripts/set-release-version.mjs",
     "i18n:extract": "i18next-cli extract",
     "i18n:check": "i18next-cli extract --dry-run --ci && i18next-cli status && i18next-cli lint",
     "i18n:lint": "i18next-cli lint",
     "i18n:status": "i18next-cli status",
-    "i18n:types": "i18next-cli types && vp fmt --write src/i18n/i18next.d.ts src/i18n/resources.d.ts",
-    "lint": "vp lint",
-    "preview": "vp preview",
-    "prepare": "vp config --no-agent"
+    "i18n:types": "i18next-cli types && vp fmt --write src/i18n/i18next.d.ts src/i18n/resources.d.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
@@ -24,6 +33,8 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.4.0",
+    "electron-log": "^5.4.4",
+    "electron-squirrel-startup": "^1.0.1",
     "embla-carousel-react": "^8.6.0",
     "i18next": "^26.4.0",
     "i18next-browser-languagedetector": "^8.2.1",
@@ -44,15 +55,27 @@
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
+    "@electron-forge/cli": "^7.11.2",
+    "@electron-forge/maker-deb": "^7.11.2",
+    "@electron-forge/maker-rpm": "^7.11.2",
+    "@electron-forge/maker-squirrel": "^7.11.2",
+    "@electron-forge/maker-zip": "^7.11.2",
+    "@electron-forge/plugin-fuses": "^7.11.2",
+    "@electron-forge/plugin-vite": "^7.11.2",
+    "@electron-forge/shared-types": "^7.11.2",
+    "@electron/fuses": "^1.8.0",
+    "@playwright/test": "^1.62.1",
     "@rolldown/plugin-babel": "^0.2.3",
     "@tanstack/react-router-devtools": "^1.167.1",
     "@tanstack/router-plugin": "^1.168.35",
     "@types/babel__core": "^7.20.5",
+    "@types/electron-squirrel-startup": "^1.0.2",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.1.0",
     "babel-plugin-react-compiler": "^1.0.0",
+    "electron": "^44.0.0",
     "i18next-cli": "^1.71.3",
     "less": "^4.9.0",
     "typescript": "~6.0.2",
@@ -70,5 +93,6 @@
       "version": "24.20.0",
       "onFail": "download"
     }
-  }
+  },
+  "productName": "norafold"
 }

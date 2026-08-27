@@ -101,3 +101,45 @@ Vite+ 文档位于 `node_modules/vite-plus/docs`，也可以查看在线文档�
 - 提交时必须严格按顺序执行：先运行 `vp fmt --write` 格式化暂存文件，再运行 `vp fmt --check` 验证格式；暂存内容包含 JavaScript/TypeScript 文件时，随后运行 `vp check --no-fmt` 完成 Lint 和类型检查。不要把检查放在格式化之前，也不要并行执行这些步骤。
 - `src/routeTree.gen.ts` 是自动生成文件，staged 流程必须排除它，不能由 Hook 格式化或修复。
 - GitHub Actions 工作流位于 `.github/workflows/ci.yml`，使用固定版本的 Vite+ Setup Action、Node.js 和锁文件安装，并通过 `vp run ci` 执行完整验证。
+
+## Electron 进程边界与安全
+
+- Electron Main、Preload 和 Renderer 必须保持清晰边界。Renderer 不得导入 Node.js 或 Electron 模块；跨进程共用的最小类型契约放在 `src/shared`，浏览器全局声明放在 `src/types`。
+- BrowserWindow 必须保持 `contextIsolation: true`、`sandbox: true`、`nodeIntegration: false` 和 `webSecurity: true`。不得为了开发或测试关闭安全 Fuses、沙箱、Web 安全或证书校验。
+- 生产 Renderer 只通过 `app://norafold` 协议加载。协议处理必须限制 host、HTTP method 和 Renderer 根目录，解码路径后阻止目录穿越；不得恢复为 `file://`。
+- Web 权限默认拒绝。新增摄像头、麦克风、定位、通知等能力时，必须按明确业务场景同时增加 request/check handler、来源校验、测试和安全说明；macOS plist 权限描述在功能实际使用前保持默认值。
+- `will-navigate` 和新窗口默认拒绝。确需打开外链时使用 `new URL()` 后精确校验协议、host/origin，再调用 `shell.openExternal`；禁止使用 `startsWith`、正则前缀或用户输入直接打开。
+- CSP 必须保持 `script-src 'self'`，不得增加 `unsafe-inline` 或 `unsafe-eval`。确需内联样式的组件只能使用 `style-src` 现有例外；frame 防护由自定义协议响应头提供。
+- Preload 暴露对象必须最小化并冻结。新增 IPC 时逐 channel 定义参数和返回类型，校验输入以及 `event.senderFrame` 来源；禁止暴露通用 `ipcRenderer.send/invoke/on`、Electron 对象或任意文件系统能力。
+- 主进程与窗口故障统一记录到 `electron-log`。新增关键后台任务时覆盖未捕获异常、拒绝、加载失败和进程退出路径，不在日志中写入密钥、令牌或完整用户内容。
+- 当前发布明确不处理 macOS 代码签名和公证。除非任务明确要求，不添加临时证书、Apple 凭据或绕过 Gatekeeper 的脚本。
+
+## Electron 测试与打包
+
+- Web 逻辑先使用 Vitest 单测。涉及 Main、Preload、CSP、自定义协议、Fuses 或桌面启动行为时，必须更新 `tests/e2e` 中的打包应用 smoke test。
+- Electron E2E 的固定顺序是先运行 `vp run package`，再运行 `vp run test:e2e`。测试必须针对 `out` 下真实产物，不以 Vite 开发服务器通过代替打包验证。
+- 安全 Fuses 禁用了 Node CLI inspect 参数，因此不得改用 Playwright `_electron.launch` 并放松 Fuses；当前 smoke test 通过测试启动参数开启 Chromium CDP，仅检查 Renderer。
+- 修改 Forge maker、Fuses、安全 override、原生依赖或发布工作流后，还必须在当前平台运行 `vp run make`。
+- Electron Forge Vite 插件当前会输出 `inlineDynamicImports` 上游弃用警告。不得修改 `node_modules` 或屏蔽警告；升级 Forge 后重新验证，待上游修复后移除本说明。
+
+## 供应链与依赖审计
+
+- 完整交付除 `vp run ci` 外还应运行 `pnpm peers check`、`pnpm audit --prod`、`pnpm audit` 和 `pnpm audit signatures`。生产和完整审计均不得遗留已知漏洞，registry 包签名验证必须通过。
+- `pnpm-workspace.yaml#overrides` 中的 `tar`、`tmp` 和 `extract-zip` 用于修复 Electron Forge 构建链漏洞；`extract-zip` 映射到 Electron 官方维护的兼容实现。变更或移除 override 前必须核对上游修复状态，并完成三平台 CI 或等价验证。
+- Forge 当前包含 Git 来源的构建期子依赖，因此项目显式设置 `blockExoticSubdeps: false`。这是受控供应链例外，不得扩展为跳过 lockfile、签名、脚本或审计检查。
+- 不裁剪现有未使用的 shadcn 组件和依赖，除非任务明确授权；但新增依赖必须说明用途、检查 peer dependencies，并确保 `package.json` 与 `pnpm-lock.yaml` 同步。
+- 项目格式化只使用 Vite+/Oxfmt。不得添加 Prettier 依赖、配置、编辑器 formatter 或 CI 步骤。
+
+## GitHub 发布与版本
+
+- `.github/workflows/release.yml` 只接受严格符合 `vX.X.X` 的标签，并在 macOS、Windows、Linux 原生 Runner 上执行 `vp run make`。不得使用模糊标签、分支名或手工上传替代可追溯发布。
+- Release 版本从标签临时写入 CI 工作区的 `package.json`；不要为了发布手工提交版本改动，也不要把 shell 文本替换用于 JSON。
+- GitHub Actions 必须固定到完整 Commit SHA，并在行尾注明对应版本。升级 Action 时同时核对来源、权限和 SHA，不使用浮动的 `main`、`latest` 或主版本标签。
+- 构建 job 只授予 `contents: read`，最终发布 job 才授予 `contents: write`。新增 secrets 时遵循最小权限，禁止通过 PR 日志或构建产物泄露。
+- 发布前更新 `CHANGELOG.md`，并保证 `vp run ci`、Electron smoke test、三平台 maker 全部通过。当前产物不包含 macOS 签名/公证，应在发布说明中保留这一限制。
+
+## 工程文档与架构决策
+
+- 开发命令、目录或发布流程变化时同步更新 `README.md` 和 `CONTRIBUTING.md`；安全支持范围变化时更新 `SECURITY.md`。
+- 安全边界、IPC 模型、持久化方案、自动更新、签名/公证或关键构建架构发生变化时，在 `docs/adr` 新增或更新 ADR，记录背景、决策和后果。
+- 用户可见或运维相关的变化维护在 `CHANGELOG.md#Unreleased`。不要把预留页面或尚未实现的产品功能描述为已交付能力。

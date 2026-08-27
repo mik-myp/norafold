@@ -22,7 +22,7 @@
     "source.fixAll.oxc": "explicit"
   },
   "[html]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "files.readonlyInclude": {
     "**/routeTree.gen.ts": true

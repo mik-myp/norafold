@@ -8,7 +8,6 @@ import {
   Settings2Icon,
   SunIcon,
 } from "lucide-react";
-import { useTheme } from "next-themes";
 import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 import { NavMain } from "@/components/navigation/nav-main";
@@ -35,6 +34,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
+import { useTheme } from "@/components/theme-context";
 import { cn } from "@/lib/utils";
 import styles from "./app-sidebar.module.less";
 
