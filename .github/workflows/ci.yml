@@ -56,5 +56,10 @@ jobs:
       - name: Package Electron application
         run: vp run package
 
+      - name: Configure Chromium sandbox
+        run: |
+          sudo chown root:root out/norafold-linux-x64/chrome-sandbox
+          sudo chmod 4755 out/norafold-linux-x64/chrome-sandbox
+
       - name: Run packaged application smoke test
         run: xvfb-run --auto-servernum vp run test:e2e

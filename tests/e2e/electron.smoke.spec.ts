@@ -31,26 +31,36 @@ async function getAvailablePort() {
   return address.port;
 }
 
-async function waitForDevTools(port: number, process: ChildProcess) {
+async function waitForDevTools(
+  port: number,
+  process: ChildProcess,
+  getProcessOutput: () => string,
+) {
   const endpoint = `http://127.0.0.1:${port}`;
 
-  await expect
-    .poll(
-      async () => {
-        if (process.exitCode !== null) {
-          throw new Error(`Packaged application exited with code ${process.exitCode}.`);
-        }
+  try {
+    await expect
+      .poll(
+        async () => {
+          if (process.exitCode !== null) {
+            throw new Error(`Packaged application exited with code ${process.exitCode}.`);
+          }
 
-        try {
-          const response = await fetch(`${endpoint}/json/version`);
-          return response.ok;
-        } catch {
-          return false;
-        }
-      },
-      { timeout: 15_000 },
-    )
-    .toBe(true);
+          try {
+            const response = await fetch(`${endpoint}/json/version`);
+            return response.ok;
+          } catch {
+            return false;
+          }
+        },
+        { timeout: 15_000 },
+      )
+      .toBe(true);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const processOutput = getProcessOutput().trim() || "No Electron output was captured.";
+    throw new Error(`${message}\n\nElectron process output:\n${processOutput}`);
+  }
 
   return endpoint;
 }
@@ -62,12 +72,15 @@ test("打包后的桌面应用可以安全加载主窗口", async () => {
   const appProcess = spawn(
     executablePath,
     [`--remote-debugging-port=${debuggingPort}`, "--remote-allow-origins=*"],
-    { stdio: "ignore" },
+    { stdio: ["ignore", "pipe", "pipe"] },
   );
+  const processOutput: string[] = [];
+  appProcess.stdout?.on("data", (chunk: Buffer) => processOutput.push(chunk.toString()));
+  appProcess.stderr?.on("data", (chunk: Buffer) => processOutput.push(chunk.toString()));
   let browser: Awaited<ReturnType<typeof chromium.connectOverCDP>> | undefined;
 
   try {
-    const endpoint = await waitForDevTools(debuggingPort, appProcess);
+    const endpoint = await waitForDevTools(debuggingPort, appProcess, () => processOutput.join(""));
     browser = await chromium.connectOverCDP(endpoint);
     const context = browser.contexts()[0];
     if (!context) {

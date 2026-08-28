@@ -1,7 +1,7 @@
 allowBuilds:
   "@swc/core": false
   electron: true
-  electron-winstaller: false
+  electron-winstaller: true
 blockExoticSubdeps: false
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@0.3.0

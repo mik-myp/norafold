@@ -79,6 +79,12 @@ jobs:
         if: runner.os != 'Linux'
         run: vp run test:e2e
 
+      - name: Configure Chromium sandbox
+        if: runner.os == 'Linux'
+        run: |
+          sudo chown root:root out/norafold-linux-x64/chrome-sandbox
+          sudo chmod 4755 out/norafold-linux-x64/chrome-sandbox
+
       - name: Run packaged application smoke test on Linux
         if: runner.os == 'Linux'
         run: xvfb-run --auto-servernum vp run test:e2e
