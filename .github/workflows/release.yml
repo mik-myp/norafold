@@ -29,16 +29,17 @@ jobs:
         with:
           node-version: "24.20.0"
           cache: true
+          run-install: false
 
       - name: Install dependencies
         run: vp install --frozen-lockfile
 
       - name: Audit and validate
         run: |
-          pnpm peers check
-          pnpm audit --prod
-          pnpm audit
-          pnpm audit signatures
+          vp env exec corepack pnpm peers check
+          vp pm audit --production
+          vp pm audit
+          vp pm audit -- signatures
           vp run ci
 
   build:
@@ -58,6 +59,7 @@ jobs:
         with:
           node-version: "24.20.0"
           cache: true
+          run-install: false
 
       - name: Install Linux packaging tools
         if: runner.os == 'Linux'

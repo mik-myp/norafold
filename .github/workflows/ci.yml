@@ -2,6 +2,8 @@ name: CI
 
 on:
   push:
+    branches:
+      - master
   pull_request:
 
 permissions:
@@ -19,16 +21,17 @@ jobs:
         with:
           node-version: "24.20.0"
           cache: true
+          run-install: false
 
       - name: Install dependencies
         run: vp install --frozen-lockfile
 
       - name: Audit dependency graph
         run: |
-          pnpm peers check
-          pnpm audit --prod
-          pnpm audit
-          pnpm audit signatures
+          vp env exec corepack pnpm peers check
+          vp pm audit --production
+          vp pm audit
+          vp pm audit -- signatures
 
       - name: Validate
         run: vp run ci
@@ -45,6 +48,7 @@ jobs:
         with:
           node-version: "24.20.0"
           cache: true
+          run-install: false
 
       - name: Install dependencies
         run: vp install --frozen-lockfile
