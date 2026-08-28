@@ -1,5 +1,6 @@
 import { FuseV1Options, FuseVersion } from "@electron/fuses";
 import { MakerDeb } from "@electron-forge/maker-deb";
+import { MakerDMG } from "@electron-forge/maker-dmg";
 import { MakerRpm } from "@electron-forge/maker-rpm";
 import { MakerSquirrel } from "@electron-forge/maker-squirrel";
 import { MakerZIP } from "@electron-forge/maker-zip";
@@ -15,7 +16,16 @@ const config: ForgeConfig = {
 
   rebuildConfig: {},
 
-  makers: [new MakerSquirrel({}), new MakerZIP({}, ["darwin"]), new MakerDeb({}), new MakerRpm({})],
+  makers: [
+    new MakerSquirrel((arch) => ({
+      name: `norafold_${arch}`,
+      setupExe: `norafold-${arch}-Setup.exe`,
+    })),
+    new MakerZIP({}, ["darwin"]),
+    new MakerDMG({}, ["darwin"]),
+    new MakerDeb({}),
+    new MakerRpm({}),
+  ],
 
   plugins: [
     new VitePlugin({

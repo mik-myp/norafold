@@ -43,13 +43,37 @@ jobs:
           vp run ci
 
   build:
-    name: Build (${{ matrix.os }})
+    name: Build (${{ matrix.name }})
     needs: validate
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        include:
+          - name: macOS Apple Silicon
+            runner: macos-15
+            platform: darwin
+            arch: arm64
+          - name: macOS Intel
+            runner: macos-15-intel
+            platform: darwin
+            arch: x64
+          - name: Windows ARM64
+            runner: windows-11-arm
+            platform: win32
+            arch: arm64
+          - name: Windows x64
+            runner: windows-latest
+            platform: win32
+            arch: x64
+          - name: Linux ARM64
+            runner: ubuntu-24.04-arm
+            platform: linux
+            arch: arm64
+          - name: Linux x64
+            runner: ubuntu-24.04
+            platform: linux
+            arch: x64
     steps:
       - name: Checkout
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
@@ -73,27 +97,33 @@ jobs:
         shell: bash
 
       - name: Make platform artifacts
-        run: vp run make
+        run: vp run make --platform "${{ matrix.platform }}" --arch "${{ matrix.arch }}"
 
       - name: Run packaged application smoke test
         if: runner.os != 'Linux'
         run: vp run test:e2e
+        env:
+          ELECTRON_TEST_ARCH: ${{ matrix.arch }}
 
       - name: Configure Chromium sandbox
         if: runner.os == 'Linux'
         run: |
-          sudo chown root:root out/norafold-linux-x64/chrome-sandbox
-          sudo chmod 4755 out/norafold-linux-x64/chrome-sandbox
+          sudo chown root:root "out/norafold-linux-${{ matrix.arch }}/chrome-sandbox"
+          sudo chmod 4755 "out/norafold-linux-${{ matrix.arch }}/chrome-sandbox"
 
       - name: Run packaged application smoke test on Linux
         if: runner.os == 'Linux'
         run: xvfb-run --auto-servernum vp run test:e2e
+        env:
+          ELECTRON_TEST_ARCH: ${{ matrix.arch }}
 
       - name: Upload platform artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: release-${{ runner.os }}-${{ runner.arch }}
-          path: out/make/**
+          name: release-${{ matrix.platform }}-${{ matrix.arch }}
+          path: |
+            out/make/**
+            !out/make/**/RELEASES
           if-no-files-found: error
           retention-days: 7
 

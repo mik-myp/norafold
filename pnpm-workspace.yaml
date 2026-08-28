@@ -2,6 +2,14 @@ allowBuilds:
   "@swc/core": false
   electron: true
   electron-winstaller: true
+  fs-xattr: true
+  macos-alias: true
+auditConfig:
+  # maker-dmg -> appdmg only processes repository-controlled build assets, and
+  # image-size has no patched release yet. Remove these once upstream updates.
+  ignoreGhsas:
+    - GHSA-5p2g-fcmc-qvqq
+    - GHSA-w3rx-r6r6-pgpr
 blockExoticSubdeps: false
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@0.3.0

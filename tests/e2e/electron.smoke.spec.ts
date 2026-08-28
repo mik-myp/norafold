@@ -7,7 +7,8 @@ import { chromium, expect, test } from "@playwright/test";
 import type { DesktopApi } from "../../src/shared/desktop-api.js";
 
 function getPackagedExecutable() {
-  const packageDirectory = path.resolve("out", `norafold-${process.platform}-${process.arch}`);
+  const targetArch = process.env.ELECTRON_TEST_ARCH ?? process.arch;
+  const packageDirectory = path.resolve("out", `norafold-${process.platform}-${targetArch}`);
 
   if (process.platform === "darwin") {
     return path.join(packageDirectory, "norafold.app", "Contents", "MacOS", "norafold");
