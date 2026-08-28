@@ -122,4 +122,7 @@ jobs:
             echo "No release artifacts were downloaded." >&2
             exit 1
           fi
-          gh release create "$TAG" "${files[@]}" --generate-notes --verify-tag
+          gh release create "$TAG" "${files[@]}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --generate-notes \
+            --verify-tag
