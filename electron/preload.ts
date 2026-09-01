@@ -1,8 +1,14 @@
 import { contextBridge } from "electron";
-import type { DesktopApi, DesktopPlatform } from "../src/shared/desktop-api.js";
+import { isDesktopPlatform, type DesktopApi } from "../src/shared/desktop-api.js";
+
+const platform = process.platform;
+
+if (!isDesktopPlatform(platform)) {
+  throw new Error(`Unsupported desktop platform: ${platform}`);
+}
 
 const desktopApi = {
-  platform: process.platform as DesktopPlatform,
+  platform,
 } satisfies DesktopApi;
 
 contextBridge.exposeInMainWorld("desktop", Object.freeze(desktopApi));

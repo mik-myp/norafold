@@ -4,7 +4,6 @@ import { access } from "node:fs/promises";
 import { createServer } from "node:net";
 import { once } from "node:events";
 import { chromium, expect, test } from "@playwright/test";
-import type { DesktopApi } from "../../src/shared/desktop-api.js";
 
 function getPackagedExecutable() {
   const targetArch = process.env.ELECTRON_TEST_ARCH ?? process.arch;
@@ -107,9 +106,15 @@ test("打包后的桌面应用可以安全加载主窗口", async () => {
     await expect(page.locator("body")).toContainText("norafold");
     expect(page.url()).toMatch(/^app:\/\/norafold\/index\.html(?:#.*)?$/);
     expect(
-      await page.evaluate(
-        () => (globalThis as unknown as { desktop?: DesktopApi }).desktop?.platform,
-      ),
+      await page.evaluate(() => {
+        const desktop = Reflect.get(globalThis, "desktop");
+        if (typeof desktop !== "object" || desktop === null) {
+          return undefined;
+        }
+
+        const platform = Reflect.get(desktop, "platform");
+        return typeof platform === "string" ? platform : undefined;
+      }),
     ).toBe(process.platform);
 
     const contentSecurityPolicy = await page
@@ -119,9 +124,12 @@ test("打包后的桌面应用可以安全加载主窗口", async () => {
     expect(contentSecurityPolicy).not.toContain("script-src 'self' 'unsafe-inline'");
     expect(consoleErrors).toEqual([]);
   } finally {
-    await browser?.close();
-    if (appProcess.exitCode === null) {
-      appProcess.kill();
+    try {
+      await browser?.close();
+    } finally {
+      if (appProcess.exitCode === null) {
+        appProcess.kill();
+      }
     }
   }
 });

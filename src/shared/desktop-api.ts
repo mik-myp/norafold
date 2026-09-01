@@ -10,6 +10,10 @@ export const desktopPlatforms = [
 
 export type DesktopPlatform = (typeof desktopPlatforms)[number];
 
+export function isDesktopPlatform(platform: string): platform is DesktopPlatform {
+  return desktopPlatforms.some((desktopPlatform) => desktopPlatform === platform);
+}
+
 export interface DesktopApi {
   readonly platform: DesktopPlatform;
 }
