@@ -13,6 +13,7 @@
 
 ### Changed
 
+- 主题与语言切换统一为单选菜单，并支持跟随系统偏好。
 - 生产 Renderer 改为通过受限的 `app://norafold` 协议加载。
 - TypeScript 启用严格模式与更严格的索引访问检查。
 - Vite Renderer 插件改为共享配置，减少 Web 与 Electron 构建漂移。

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vite-plus/test";
 
-import i18n from "@/i18n";
+import i18n, { getLanguagePreference, setLanguagePreference, systemLanguage } from "@/i18n";
 
 describe("i18n", () => {
   beforeEach(async () => {
@@ -13,6 +13,12 @@ describe("i18n", () => {
     await i18n.changeLanguage("en");
 
     expect(i18n.t("navigation.home")).toBe("Home");
-    expect(i18n.t("notFound.title")).toBe("Page not found");
+    expect(i18n.t("notFound.returnHome")).toBe("Back to home");
+  });
+
+  it("支持跟随系统语言偏好", async () => {
+    await setLanguagePreference(systemLanguage);
+
+    expect(getLanguagePreference()).toBe(systemLanguage);
   });
 });

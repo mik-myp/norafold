@@ -1,6 +1,16 @@
-import { Outlet, createRootRoute } from "@tanstack/react-router";
+import { Link, Outlet, createRootRoute } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { HouseIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 export const Route = createRootRoute({
@@ -21,11 +31,22 @@ function NotFoundComponent() {
   const { t } = useTranslation();
 
   return (
-    <main className="grid min-h-svh place-items-center p-6">
-      <div className="text-center">
-        <p className="text-sm text-muted-foreground">404</p>
-        <h1 className="mt-2 text-xl font-medium">{t("notFound.title")}</h1>
-      </div>
+    <main className="min-h-svh">
+      <Empty className="min-h-svh rounded-none px-6 py-12">
+        <EmptyHeader>
+          <EmptyMedia>
+            <span className="text-7xl font-semibold text-muted-foreground/20 sm:text-8xl">404</span>
+          </EmptyMedia>
+          <EmptyTitle>{t("notFound.title")}</EmptyTitle>
+          <EmptyDescription>{t("notFound.description")}</EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <Button render={<Link to="/" />} nativeButton={false}>
+            <HouseIcon data-icon="inline-start" />
+            {t("notFound.returnHome")}
+          </Button>
+        </EmptyContent>
+      </Empty>
     </main>
   );
 }

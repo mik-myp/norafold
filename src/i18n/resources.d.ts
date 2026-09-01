@@ -2,9 +2,9 @@
 export default interface Resources {
   translation: {
     language: {
-      change: "切换语言";
       en: "English";
-      label: "语言";
+      label: "界面语言";
+      system: "跟随系统";
       zhCN: "简体中文";
     };
     navigation: {
@@ -13,17 +13,20 @@ export default interface Resources {
       settings: "设置";
     };
     notFound: {
-      title: "页面不存在";
+      description: "你访问的页面可能已被移动、删除，或地址输入有误。";
+      returnHome: "返回首页";
+      title: "没有找到这个页面";
     };
     sidebar: {
       description: "显示移动端侧边栏。";
-      search: "搜索";
       title: "侧边栏";
       toggle: "切换侧边栏";
     };
     theme: {
-      dark: "深色模式";
-      light: "浅色模式";
+      dark: "深色";
+      label: "外观";
+      light: "浅色";
+      system: "跟随系统";
     };
   };
 }
