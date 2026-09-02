@@ -10,6 +10,7 @@ import "@/i18n";
 import { routeTree } from "./routeTree.gen";
 import "./index.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AppearanceProvider } from "@/features/appearance/appearance-provider";
 
 const history = window.desktop ? createHashHistory() : createBrowserHistory();
 
@@ -35,7 +36,9 @@ if (!rootElement) {
 createRoot(rootElement).render(
   <StrictMode>
     <ThemeProvider>
-      <RouterProvider router={router} />
+      <AppearanceProvider>
+        <RouterProvider router={router} />
+      </AppearanceProvider>
     </ThemeProvider>
   </StrictMode>,
 );

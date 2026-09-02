@@ -4,6 +4,18 @@
     "retry": "重试",
     "title": "页面加载失败"
   },
+  "knowledge": {
+    "description": "在本地整理研究资料与可追溯来源。",
+    "empty": {
+      "description": "知识库功能尚未接入内容，这里将作为资料阅读与整理区域。",
+      "title": "知识工作区已就绪"
+    },
+    "sources": {
+      "empty": "接入资料后，来源会在这里集中显示。",
+      "title": "来源"
+    },
+    "title": "知识库"
+  },
   "language": {
     "en": "English",
     "label": "界面语言",
@@ -22,15 +34,97 @@
   },
   "settings": {
     "appearance": {
-      "description": "选择应用使用的颜色主题。"
+      "contentLayout": {
+        "label": "选择内容宽度",
+        "options": {
+          "centered": "居中",
+          "full": "全宽"
+        },
+        "title": "内容宽度"
+      },
+      "description": "调整外观和布局以符合你的使用偏好。",
+      "direction": {
+        "label": "选择界面方向",
+        "options": {
+          "ltr": "从左到右",
+          "rtl": "从右到左"
+        },
+        "title": "方向"
+      },
+      "font": {
+        "label": "选择界面字体",
+        "options": {
+          "default": "自动",
+          "sans": "无衬线",
+          "serif": "衬线"
+        },
+        "title": "字体"
+      },
+      "layout": {
+        "label": "选择布局样式",
+        "options": {
+          "default": "默认",
+          "icon": "紧凑",
+          "offcanvas": "完整布局"
+        },
+        "title": "布局"
+      },
+      "open": "打开主题设置",
+      "preset": {
+        "label": "选择颜色预设",
+        "options": {
+          "anthropic": "Anthropic",
+          "default": "默认",
+          "forest-whisper": "Forest Whisper",
+          "lake-view": "Lake View",
+          "lavender-dream": "Lavender Dream",
+          "ocean-breeze": "Ocean Breeze",
+          "rose-garden": "Rose Garden",
+          "simple-large": "Simple Large-font",
+          "sunset-glow": "Sunset Glow",
+          "underground": "Underground"
+        },
+        "title": "颜色预设"
+      },
+      "radius": {
+        "label": "选择圆角大小",
+        "title": "圆角"
+      },
+      "resetAll": "重置",
+      "resetAllLabel": "将所有外观设置恢复为默认值",
+      "resetSection": "重置{{section}}",
+      "scale": {
+        "label": "选择界面密度",
+        "options": {
+          "default": "默认",
+          "lg": "舒适",
+          "sm": "紧凑",
+          "xl": "超大"
+        },
+        "title": "密度"
+      },
+      "sidebar": {
+        "label": "选择侧边栏样式",
+        "options": {
+          "floating": "浮动",
+          "inset": "内嵌",
+          "sidebar": "侧边栏"
+        },
+        "title": "侧边栏"
+      },
+      "theme": {
+        "label": "选择主题偏好",
+        "title": "主题"
+      },
+      "title": "主题设置"
     },
+    "backToWorkbench": "返回工作台",
     "description": "管理应用偏好和版本更新。",
     "language": {
       "description": "选择界面显示语言。"
     },
     "tabs": {
       "general": "通用",
-      "label": "设置分类",
       "updates": "更新"
     },
     "title": "设置",
@@ -70,8 +164,31 @@
   },
   "theme": {
     "dark": "深色",
-    "label": "外观",
     "light": "浅色",
     "system": "跟随系统"
+  },
+  "workbench": {
+    "description": "从一个安静、清晰的工作台进入资料与应用偏好。",
+    "destinations": {
+      "knowledge": {
+        "description": "进入资料与来源工作区。",
+        "title": "知识库"
+      },
+      "settings": {
+        "description": "管理界面语言、外观和应用更新。",
+        "title": "设置"
+      },
+      "title": "工作区"
+    },
+    "openKnowledge": "打开知识库",
+    "recent": {
+      "empty": {
+        "action": "前往知识库",
+        "description": "目前没有可显示的最近工作。",
+        "title": "还没有最近工作"
+      },
+      "title": "最近工作"
+    },
+    "title": "研究工作台"
   }
 }

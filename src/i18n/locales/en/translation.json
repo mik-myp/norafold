@@ -4,6 +4,18 @@
     "retry": "Try again",
     "title": "Page failed to load"
   },
+  "knowledge": {
+    "description": "Organize research material and traceable sources locally.",
+    "empty": {
+      "description": "Content is not connected yet. This area is reserved for reading and organizing material.",
+      "title": "Knowledge workspace ready"
+    },
+    "sources": {
+      "empty": "Sources will appear here once material is connected.",
+      "title": "Sources"
+    },
+    "title": "Knowledge"
+  },
   "language": {
     "en": "English",
     "label": "Interface language",
@@ -22,15 +34,97 @@
   },
   "settings": {
     "appearance": {
-      "description": "Choose the color theme used by the application."
+      "contentLayout": {
+        "label": "Select content width",
+        "options": {
+          "centered": "Centered",
+          "full": "Full width"
+        },
+        "title": "Content width"
+      },
+      "description": "Adjust the appearance and layout to suit your preferences.",
+      "direction": {
+        "label": "Select interface direction",
+        "options": {
+          "ltr": "Left to Right",
+          "rtl": "Right to Left"
+        },
+        "title": "Direction"
+      },
+      "font": {
+        "label": "Select interface font",
+        "options": {
+          "default": "Auto",
+          "sans": "Sans",
+          "serif": "Serif"
+        },
+        "title": "Font"
+      },
+      "layout": {
+        "label": "Select layout style",
+        "options": {
+          "default": "Default",
+          "icon": "Compact",
+          "offcanvas": "Full layout"
+        },
+        "title": "Layout"
+      },
+      "open": "Open theme settings",
+      "preset": {
+        "label": "Select color preset",
+        "options": {
+          "anthropic": "Anthropic",
+          "default": "Default",
+          "forest-whisper": "Forest Whisper",
+          "lake-view": "Lake View",
+          "lavender-dream": "Lavender Dream",
+          "ocean-breeze": "Ocean Breeze",
+          "rose-garden": "Rose Garden",
+          "simple-large": "Simple Large-font",
+          "sunset-glow": "Sunset Glow",
+          "underground": "Underground"
+        },
+        "title": "Color preset"
+      },
+      "radius": {
+        "label": "Select border radius",
+        "title": "Border radius"
+      },
+      "resetAll": "Reset",
+      "resetAllLabel": "Reset all appearance settings to default values",
+      "resetSection": "Reset {{section}}",
+      "scale": {
+        "label": "Select interface density",
+        "options": {
+          "default": "Default",
+          "lg": "Comfortable",
+          "sm": "Compact",
+          "xl": "Super Large"
+        },
+        "title": "Density"
+      },
+      "sidebar": {
+        "label": "Select sidebar style",
+        "options": {
+          "floating": "Floating",
+          "inset": "Inset",
+          "sidebar": "Sidebar"
+        },
+        "title": "Sidebar"
+      },
+      "theme": {
+        "label": "Select theme preference",
+        "title": "Theme"
+      },
+      "title": "Theme Settings"
     },
+    "backToWorkbench": "Back to workspace",
     "description": "Manage application preferences and version updates.",
     "language": {
       "description": "Choose the language used by the interface."
     },
     "tabs": {
       "general": "General",
-      "label": "Settings sections",
       "updates": "Updates"
     },
     "title": "Settings",
@@ -70,8 +164,31 @@
   },
   "theme": {
     "dark": "Dark",
-    "label": "Appearance",
     "light": "Light",
     "system": "Follow system"
+  },
+  "workbench": {
+    "description": "A quiet, focused starting point for material and application preferences.",
+    "destinations": {
+      "knowledge": {
+        "description": "Open the material and sources workspace.",
+        "title": "Knowledge"
+      },
+      "settings": {
+        "description": "Manage interface language, appearance, and application updates.",
+        "title": "Settings"
+      },
+      "title": "Workspace"
+    },
+    "openKnowledge": "Open knowledge",
+    "recent": {
+      "empty": {
+        "action": "Go to knowledge",
+        "description": "There is no recent work to show yet.",
+        "title": "No recent work"
+      },
+      "title": "Recent work"
+    },
+    "title": "Research workbench"
   }
 }

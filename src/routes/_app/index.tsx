@@ -1,9 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { WorkbenchHome } from "@/features/workbench/components/workbench-home";
 
 export const Route = createFileRoute("/_app/")({
-  component: HomeRoute,
+  component: WorkbenchHome,
 });
-
-function HomeRoute() {
-  return null;
-}

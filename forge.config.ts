@@ -32,8 +32,9 @@ async function copySqliteVecExtension(
         : "vec0.so";
   const packageName = `sqlite-vec-${packagePlatform}-${targetArch}`;
   const sourcePath = path.resolve("node_modules", packageName, extensionName);
-  const destinationDirectory =
-    targetPlatform === "darwin" ? path.resolve(buildPath, "..") : path.join(buildPath, "resources");
+  // Electron Packager passes the temporary resources/app directory to this hook.
+  // Native extensions must remain beside app.asar so process.resourcesPath can load them.
+  const destinationDirectory = path.resolve(buildPath, "..");
 
   await mkdir(destinationDirectory, { recursive: true });
   await copyFile(sourcePath, path.join(destinationDirectory, extensionName));

@@ -16,6 +16,23 @@ function getPackagedExecutable() {
   return path.join(packageDirectory, process.platform === "win32" ? "norafold.exe" : "norafold");
 }
 
+function getPackagedSqliteVecExtension() {
+  const targetArch = process.env.ELECTRON_TEST_ARCH ?? process.arch;
+  const packageDirectory = path.resolve("out", `norafold-${process.platform}-${targetArch}`);
+  const extensionName =
+    process.platform === "darwin"
+      ? "vec0.dylib"
+      : process.platform === "win32"
+        ? "vec0.dll"
+        : "vec0.so";
+  const resourcesDirectory =
+    process.platform === "darwin"
+      ? path.join(packageDirectory, "norafold.app", "Contents", "Resources")
+      : path.join(packageDirectory, "resources");
+
+  return path.join(resourcesDirectory, extensionName);
+}
+
 async function getAvailablePort() {
   const server = createServer();
   server.listen(0, "127.0.0.1");
@@ -86,7 +103,7 @@ function stopPackagedApplication(appProcess: ChildProcess) {
 
 test("打包后的桌面应用可以安全加载主窗口", async () => {
   const executablePath = getPackagedExecutable();
-  await access(executablePath);
+  await Promise.all([access(executablePath), access(getPackagedSqliteVecExtension())]);
   const debuggingPort = await getAvailablePort();
   const appProcess = spawn(
     executablePath,
@@ -154,10 +171,10 @@ test("打包后的桌面应用可以安全加载主窗口", async () => {
     expect(contentSecurityPolicy).not.toContain("script-src 'self' 'unsafe-inline'");
     expect(consoleErrors).toEqual([]);
 
-    await page.getByRole("link", { name: "设置" }).click();
-    await expect(page.getByRole("heading", { name: "设置" })).toBeVisible();
+    await page.getByRole("link", { name: "设置", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "设置", exact: true })).toBeVisible();
     await page.getByRole("button", { name: "English", exact: true }).click();
-    await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Settings", exact: true })).toBeVisible();
     expect(await page.evaluate(() => localStorage.getItem("norafold.language"))).toBe("en");
 
     await page
@@ -167,12 +184,38 @@ test("打包后的桌面应用可以安全加载主窗口", async () => {
     expect(await page.evaluate(() => localStorage.getItem("norafold.language"))).toBeNull();
 
     await page
-      .getByLabel(/^(Appearance|外观)$/)
-      .getByRole("button", { name: /^(Dark|深色)$/, exact: true })
+      .getByRole("button", { name: /^(Open theme settings|打开主题设置)$/, exact: true })
       .click();
+    await expect(
+      page.getByRole("heading", { name: /^(Theme Settings|主题设置)$/, exact: true }),
+    ).toBeVisible();
+
+    await page.getByRole("radio", { name: /^(Dark|深色)$/, exact: true }).click();
     await expect(page.locator("html")).toHaveClass(/dark/);
 
-    await page.getByRole("tab", { name: /^(Updates|更新)$/ }).click();
+    await page.getByRole("radio", { name: "Anthropic", exact: true }).click();
+    await expect(page.locator("body")).toHaveAttribute("data-theme-preset", "anthropic");
+
+    await page.getByRole("radio", { name: /^(Sans|无衬线)$/, exact: true }).click();
+    await expect(page.locator("body")).toHaveAttribute("data-theme-font", "sans");
+
+    await page
+      .getByRole("radiogroup", { name: /^(Select sidebar style|选择侧边栏样式)$/ })
+      .getByRole("radio", { name: /^(Floating|浮动)$/, exact: true })
+      .click();
+    await expect(page.locator('[data-slot="sidebar"]')).toHaveAttribute("data-variant", "floating");
+
+    await page
+      .getByRole("button", {
+        name: /^(Reset all appearance settings to default values|将所有外观设置恢复为默认值)$/,
+      })
+      .click();
+    await expect(page.locator("body")).not.toHaveAttribute("data-theme-preset");
+    await expect(page.locator("body")).not.toHaveAttribute("data-theme-font");
+    await page.keyboard.press("Escape");
+
+    await page.getByRole("link", { name: /^(Updates|更新)$/, exact: true }).click();
+    await expect(page).toHaveURL(/#\/settings\?section=updates$/);
     await expect(page.getByText(/^(Application updates|应用更新)$/)).toBeVisible();
     await expect(
       page.getByRole("button", { name: /^(Check for updates|检查更新)$/ }),
