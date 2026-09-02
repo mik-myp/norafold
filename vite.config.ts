@@ -33,6 +33,7 @@ export default defineConfig({
       "src/routeTree.gen.ts",
       ".vite/**",
       "out/**",
+      "coverage/**",
       "playwright-report/**",
       "test-results/**",
     ],
@@ -43,8 +44,15 @@ export default defineConfig({
     },
   },
   lint: {
-    ignorePatterns: [".vite/**", "out/**", "playwright-report/**", "test-results/**"],
-    plugins: ["react", "typescript", "oxc"],
+    ignorePatterns: [
+      "src/components/ui/**",
+      ".vite/**",
+      "out/**",
+      "coverage/**",
+      "playwright-report/**",
+      "test-results/**",
+    ],
+    plugins: ["react", "typescript", "oxc", "import", "jsx-a11y"],
     rules: {
       "react/rules-of-hooks": "error",
       "react/only-export-components": [
@@ -54,7 +62,23 @@ export default defineConfig({
         },
       ],
       "vite-plus/prefer-vite-plus-imports": "error",
+      "import/no-cycle": "error",
+      "jsx-a11y/alt-text": "error",
+      "jsx-a11y/anchor-has-content": "error",
+      "jsx-a11y/aria-props": "error",
+      "jsx-a11y/aria-role": "error",
+      "jsx-a11y/heading-has-content": "error",
     },
+    overrides: [
+      {
+        files: ["src/**/*.test.{ts,tsx}", "electron/**/*.test.ts"],
+        plugins: ["vitest"],
+        rules: {
+          "vitest/no-disabled-tests": "error",
+          "vitest/no-focused-tests": "error",
+        },
+      },
+    ],
     options: {
       typeAware: true,
       typeCheck: true,
@@ -67,7 +91,26 @@ export default defineConfig({
     ],
   },
   test: {
-    include: ["src/**/*.test.{ts,tsx}"],
+    include: ["src/**/*.test.{ts,tsx}", "electron/**/*.test.ts"],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html"],
+      include: [
+        "src/i18n/index.ts",
+        "src/lib/utils.ts",
+        "src/shared/desktop-api.ts",
+        "electron/security.ts",
+        "electron/database/**/*.ts",
+        "electron/updates.ts",
+      ],
+      exclude: ["**/*.d.ts"],
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        statements: 80,
+        branches: 75,
+      },
+    },
   },
   staged: {
     "*.{js,jsx,ts,tsx,json,css,less,md,html,yaml,yml}": createStagedCommands,
@@ -90,7 +133,7 @@ export default defineConfig({
         output: ["dist/**"],
       },
       ci: {
-        command: ["vp check", "vp run i18n:check", "vp test", "vp run build"],
+        command: ["vp check", "vp run i18n:check", "vp test run --coverage", "vp run build"],
       },
     },
   },

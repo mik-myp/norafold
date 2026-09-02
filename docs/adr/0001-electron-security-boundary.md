@@ -20,4 +20,4 @@ norafold 同时运行 Electron Main、Preload 和不可信程度更高的 Render
 
 新增桌面能力需要显式扩展 Preload/IPC 契约、安全校验和测试。Playwright 无法通过依赖 Node inspect 的 Electron 驱动启动已加固产物，因此 smoke test 使用仅在测试进程参数中启用的 Chromium CDP 端口连接 Renderer，不修改生产 Fuses。
 
-macOS 签名、公证和权限描述不属于本决策范围，待实际能力与分发渠道明确后另建 ADR。
+macOS/Windows 签名、公证和附加供应链产物由 ADR 0002 明确暂不配置；macOS 权限描述仍保持 Electron Forge 默认值，待实际桌面能力明确后再单独评估。

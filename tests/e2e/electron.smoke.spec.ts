@@ -65,6 +65,25 @@ async function waitForDevTools(
   return endpoint;
 }
 
+function stopPackagedApplication(appProcess: ChildProcess) {
+  if (appProcess.exitCode !== null || appProcess.pid === undefined) {
+    return;
+  }
+
+  if (process.platform === "win32") {
+    appProcess.kill();
+    return;
+  }
+
+  try {
+    process.kill(-appProcess.pid, "SIGKILL");
+  } catch (error: unknown) {
+    if (!(error instanceof Error) || !("code" in error) || error.code !== "ESRCH") {
+      throw error;
+    }
+  }
+}
+
 test("打包后的桌面应用可以安全加载主窗口", async () => {
   const executablePath = getPackagedExecutable();
   await access(executablePath);
@@ -72,7 +91,7 @@ test("打包后的桌面应用可以安全加载主窗口", async () => {
   const appProcess = spawn(
     executablePath,
     [`--remote-debugging-port=${debuggingPort}`, "--remote-allow-origins=*"],
-    { stdio: ["ignore", "pipe", "pipe"] },
+    { detached: process.platform !== "win32", stdio: ["ignore", "pipe", "pipe"] },
   );
   const processOutput: string[] = [];
   appProcess.stdout?.on("data", (chunk: Buffer) => processOutput.push(chunk.toString()));
@@ -101,6 +120,9 @@ test("打包后的桌面应用可以安全加载主窗口", async () => {
     });
 
     await page.waitForLoadState("domcontentloaded");
+    await page.evaluate(() => localStorage.setItem("norafold.language", "zh-CN"));
+    await page.reload();
+    await page.waitForLoadState("domcontentloaded");
 
     await expect(page).toHaveTitle("norafold");
     await expect(page.locator("body")).toContainText("norafold");
@@ -116,6 +138,14 @@ test("打包后的桌面应用可以安全加载主窗口", async () => {
         return typeof platform === "string" ? platform : undefined;
       }),
     ).toBe(process.platform);
+    expect(
+      await page.evaluate(() => {
+        const desktop = Reflect.get(globalThis, "desktop");
+        if (typeof desktop !== "object" || desktop === null) return undefined;
+        const getDatabaseStatus = Reflect.get(desktop, "getDatabaseStatus");
+        return typeof getDatabaseStatus === "function" ? getDatabaseStatus() : undefined;
+      }),
+    ).toEqual({ schemaVersion: 2, embeddingDimensions: 1536 });
 
     const contentSecurityPolicy = await page
       .locator('meta[http-equiv="Content-Security-Policy"]')
@@ -123,13 +153,41 @@ test("打包后的桌面应用可以安全加载主窗口", async () => {
     expect(contentSecurityPolicy).toContain("script-src 'self'");
     expect(contentSecurityPolicy).not.toContain("script-src 'self' 'unsafe-inline'");
     expect(consoleErrors).toEqual([]);
+
+    await page.getByRole("link", { name: "设置" }).click();
+    await expect(page.getByRole("heading", { name: "设置" })).toBeVisible();
+    await page.getByRole("button", { name: "English", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
+    expect(await page.evaluate(() => localStorage.getItem("norafold.language"))).toBe("en");
+
+    await page
+      .getByLabel("Interface language")
+      .getByRole("button", { name: "Follow system", exact: true })
+      .click();
+    expect(await page.evaluate(() => localStorage.getItem("norafold.language"))).toBeNull();
+
+    await page
+      .getByLabel(/^(Appearance|外观)$/)
+      .getByRole("button", { name: /^(Dark|深色)$/, exact: true })
+      .click();
+    await expect(page.locator("html")).toHaveClass(/dark/);
+
+    await page.getByRole("tab", { name: /^(Updates|更新)$/ }).click();
+    await expect(page.getByText(/^(Application updates|应用更新)$/)).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /^(Check for updates|检查更新)$/ }),
+    ).toBeEnabled();
+
+    await page.evaluate("window.location.hash = '#/missing-route'");
+    await page.waitForURL(/app:\/\/norafold\/index\.html#\/missing-route$/);
+    await expect(page.getByText(/^(This page could not be found|没有找到这个页面)$/)).toBeVisible();
+    await page.getByRole("button", { name: /^(Back to home|返回首页)$/ }).click();
+    await expect(page).toHaveURL(/app:\/\/norafold\/index\.html#\/?$/);
   } finally {
     try {
       await browser?.close();
     } finally {
-      if (appProcess.exitCode === null) {
-        appProcess.kill();
-      }
+      stopPackagedApplication(appProcess);
     }
   }
 });

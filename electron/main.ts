@@ -1,12 +1,27 @@
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { app, BrowserWindow, net, protocol, session, type WebContents } from "electron";
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  net,
+  protocol,
+  session,
+  shell,
+  type IpcMainInvokeEvent,
+  type WebContents,
+} from "electron";
 import log from "electron-log/main";
 import started from "electron-squirrel-startup";
-
-const appScheme = "app";
-const appHost = "norafold";
-const appOrigin = `${appScheme}://${appHost}`;
+import {
+  closeDatabase as closeManagedDatabase,
+  defaultEmbeddingDimensions,
+  getDatabase,
+  getSqliteVecExtensionPath,
+  initializeDatabase as initializeManagedDatabase,
+} from "./database/index.js";
+import { appOrigin, appScheme, isTrustedNavigation, resolveRendererRequest } from "./security.js";
+import { checkForUpdates, githubReleaseUrl } from "./updates.js";
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -26,12 +41,32 @@ if (started) {
 
 log.initialize();
 
+let isExitingAfterFatalError = false;
+
+function closeDatabase() {
+  try {
+    closeManagedDatabase();
+  } catch (error: unknown) {
+    log.warn("Unable to close database", error);
+  }
+}
+
+function exitAfterFatalError(message: string, error: unknown) {
+  log.error(message, error);
+  closeDatabase();
+
+  if (!isExitingAfterFatalError) {
+    isExitingAfterFatalError = true;
+    app.exit(1);
+  }
+}
+
 process.on("uncaughtException", (error) => {
-  log.error("Uncaught exception in the main process", error);
+  exitAfterFatalError("Uncaught exception in the main process", error);
 });
 
 process.on("unhandledRejection", (reason) => {
-  log.error("Unhandled rejection in the main process", reason);
+  exitAfterFatalError("Unhandled rejection in the main process", reason);
 });
 
 function getRendererRoot() {
@@ -42,27 +77,12 @@ function registerAppProtocol() {
   const rendererRoot = getRendererRoot();
 
   protocol.handle(appScheme, async (request) => {
-    const requestUrl = new URL(request.url);
-    if (requestUrl.host !== appHost || (request.method !== "GET" && request.method !== "HEAD")) {
-      return new Response(null, { status: 403 });
+    const resolvedRequest = resolveRendererRequest(rendererRoot, request.url, request.method);
+    if (!resolvedRequest.allowed) {
+      return new Response(null, { status: resolvedRequest.status });
     }
 
-    let pathname: string;
-    try {
-      pathname = decodeURIComponent(requestUrl.pathname);
-    } catch {
-      return new Response(null, { status: 400 });
-    }
-
-    const relativePath = pathname === "/" ? "index.html" : pathname.slice(1);
-    const filePath = path.resolve(rendererRoot, relativePath);
-    const pathFromRoot = path.relative(rendererRoot, filePath);
-
-    if (pathFromRoot.startsWith("..") || path.isAbsolute(pathFromRoot)) {
-      return new Response(null, { status: 403 });
-    }
-
-    const response = await net.fetch(pathToFileURL(filePath).toString());
+    const response = await net.fetch(pathToFileURL(resolvedRequest.filePath).toString());
     const headers = new Headers(response.headers);
     headers.set("X-Frame-Options", "DENY");
 
@@ -72,21 +92,6 @@ function registerAppProtocol() {
       statusText: response.statusText,
     });
   });
-}
-
-function isTrustedNavigation(url: string) {
-  try {
-    const parsedUrl = new URL(url);
-    const navigationOrigin = `${parsedUrl.protocol}//${parsedUrl.host}`;
-
-    if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-      return navigationOrigin === new URL(MAIN_WINDOW_VITE_DEV_SERVER_URL).origin;
-    }
-
-    return navigationOrigin === appOrigin;
-  } catch {
-    return false;
-  }
 }
 
 function focusWindow(window: BrowserWindow) {
@@ -99,12 +104,21 @@ function focusWindow(window: BrowserWindow) {
 }
 
 function observeWindow(window: BrowserWindow) {
-  window.webContents.on("did-fail-load", (_event, errorCode, errorDescription, url) => {
-    log.error("Renderer failed to load", { errorCode, errorDescription, url });
-  });
+  window.webContents.on(
+    "did-fail-load",
+    (_event, errorCode, errorDescription, url, isMainFrame) => {
+      if (isMainFrame && errorCode !== -3) {
+        exitAfterFatalError("Renderer failed to load", {
+          errorCode,
+          errorDescription,
+          url,
+        });
+      }
+    },
+  );
 
   window.webContents.on("render-process-gone", (_event, details) => {
-    log.error("Renderer process exited", details);
+    exitAfterFatalError("Renderer process exited", details);
   });
 
   window.on("unresponsive", () => {
@@ -114,7 +128,7 @@ function observeWindow(window: BrowserWindow) {
 
 function secureWebContents(webContents: WebContents) {
   webContents.on("will-navigate", (event, url) => {
-    if (!isTrustedNavigation(url)) {
+    if (!isTrustedNavigation(url, MAIN_WINDOW_VITE_DEV_SERVER_URL)) {
       event.preventDefault();
       log.warn("Blocked renderer navigation", { url });
     }
@@ -123,6 +137,57 @@ function secureWebContents(webContents: WebContents) {
   webContents.setWindowOpenHandler(({ url }) => {
     log.warn("Blocked renderer window request", { url });
     return { action: "deny" };
+  });
+}
+
+function assertTrustedIpcSender(event: IpcMainInvokeEvent) {
+  const frameUrl = event.senderFrame?.url;
+  if (!frameUrl || !isTrustedNavigation(frameUrl, MAIN_WINDOW_VITE_DEV_SERVER_URL)) {
+    throw new Error("Blocked IPC request from an untrusted frame.");
+  }
+}
+
+function registerIpcHandlers() {
+  ipcMain.handle("desktop:get-version", (event) => {
+    assertTrustedIpcSender(event);
+    return app.getVersion();
+  });
+
+  ipcMain.handle("desktop:check-for-updates", async (event) => {
+    assertTrustedIpcSender(event);
+    const result = await checkForUpdates(app.getVersion(), (input, init) => net.fetch(input, init));
+    if (result.status === "error") {
+      log.warn("Update check failed", { code: result.code });
+    }
+
+    return result;
+  });
+
+  ipcMain.handle("desktop:open-release", async (event) => {
+    assertTrustedIpcSender(event);
+    try {
+      await shell.openExternal(githubReleaseUrl);
+    } catch (error: unknown) {
+      log.warn("Unable to open GitHub Release", error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle("desktop:get-database-status", (event) => {
+    assertTrustedIpcSender(event);
+    return getDatabase().status;
+  });
+}
+
+function initializeApplicationDatabase() {
+  const location = path.join(app.getPath("userData"), "norafold.sqlite");
+  initializeManagedDatabase({
+    location,
+    embeddingDimensions: defaultEmbeddingDimensions,
+    extensionPath: getSqliteVecExtensionPath({
+      packaged: app.isPackaged,
+      resourcesPath: process.resourcesPath,
+    }),
   });
 }
 
@@ -150,11 +215,11 @@ function createWindow() {
 
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     void mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL).catch((error: unknown) => {
-      log.error("Unable to load the development renderer", error);
+      exitAfterFatalError("Unable to load the development renderer", error);
     });
   } else {
     void mainWindow.loadURL(`${appOrigin}/index.html`).catch((error: unknown) => {
-      log.error("Unable to load the packaged renderer", error);
+      exitAfterFatalError("Unable to load the packaged renderer", error);
     });
   }
 
@@ -173,31 +238,42 @@ if (!hasSingleInstanceLock) {
     }
   });
 
-  void app.whenReady().then(() => {
-    session.defaultSession.setPermissionCheckHandler(() => false);
-    session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => {
-      callback(false);
-    });
+  void app
+    .whenReady()
+    .then(() => {
+      session.defaultSession.setPermissionCheckHandler(() => false);
+      session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => {
+        callback(false);
+      });
 
-    if (!MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-      registerAppProtocol();
-    }
-
-    createWindow();
-
-    app.on("activate", () => {
-      const mainWindow = BrowserWindow.getAllWindows()[0];
-      if (mainWindow) {
-        focusWindow(mainWindow);
-      } else {
-        createWindow();
+      if (!MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+        registerAppProtocol();
       }
+
+      initializeApplicationDatabase();
+      registerIpcHandlers();
+      createWindow();
+
+      app.on("activate", () => {
+        const mainWindow = BrowserWindow.getAllWindows()[0];
+        if (mainWindow) {
+          focusWindow(mainWindow);
+        } else {
+          createWindow();
+        }
+      });
+    })
+    .catch((error: unknown) => {
+      exitAfterFatalError("Unable to initialize the application", error);
     });
-  });
 }
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
   }
+});
+
+app.on("will-quit", () => {
+  closeDatabase();
 });

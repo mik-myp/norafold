@@ -1,4 +1,9 @@
 {
+  "error": {
+    "description": "The application encountered a temporary problem. Try again or return home.",
+    "retry": "Try again",
+    "title": "Page failed to load"
+  },
   "language": {
     "en": "English",
     "label": "Interface language",
@@ -14,6 +19,49 @@
     "description": "The page may have moved, been deleted, or the address may be incorrect.",
     "returnHome": "Back to home",
     "title": "This page could not be found"
+  },
+  "settings": {
+    "appearance": {
+      "description": "Choose the color theme used by the application."
+    },
+    "description": "Manage application preferences and version updates.",
+    "language": {
+      "description": "Choose the language used by the interface."
+    },
+    "tabs": {
+      "general": "General",
+      "label": "Settings sections",
+      "updates": "Updates"
+    },
+    "title": "Settings",
+    "updates": {
+      "available": {
+        "description": "Confirm to open the GitHub Release download page.",
+        "title": "Version {{version}} is available"
+      },
+      "check": "Check for updates",
+      "checking": "Checking…",
+      "currentVersion": "Current version: {{version}}",
+      "description": "Manually check GitHub Releases for a newer version.",
+      "desktopOnly": {
+        "description": "Open the desktop application to check for updates.",
+        "title": "Desktop application only"
+      },
+      "download": "Download update",
+      "error": {
+        "invalid-current-version": "The current application version is invalid.",
+        "invalid-response": "The update service returned invalid information.",
+        "network": "Could not connect to the update service. Try again later.",
+        "open-release": "Could not open the download page. Visit GitHub Releases manually.",
+        "rate-limited": "Too many update checks. Try again later.",
+        "title": "Update check failed"
+      },
+      "title": "Application updates",
+      "upToDate": {
+        "description": "You are already using the latest version.",
+        "title": "Up to date"
+      }
+    }
   },
   "sidebar": {
     "description": "Displays the mobile sidebar.",

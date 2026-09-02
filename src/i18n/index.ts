@@ -70,7 +70,18 @@ void i18n
   });
 
 export async function setLanguagePreference(language: LanguagePreference) {
-  languageDetector.cacheUserLanguage(language, ["localStorage"]);
+  if (language === systemLanguage) {
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.removeItem(languageStorageKey);
+      } catch {
+        // Storage can be unavailable in restricted browser contexts; system detection still works.
+      }
+    }
+  } else {
+    languageDetector.cacheUserLanguage(language, ["localStorage"]);
+  }
+
   await i18n.changeLanguage(language === systemLanguage ? undefined : language);
 }
 

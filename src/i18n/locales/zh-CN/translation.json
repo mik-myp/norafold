@@ -1,4 +1,9 @@
 {
+  "error": {
+    "description": "应用遇到暂时性问题，请重试或返回首页。",
+    "retry": "重试",
+    "title": "页面加载失败"
+  },
   "language": {
     "en": "English",
     "label": "界面语言",
@@ -14,6 +19,49 @@
     "description": "你访问的页面可能已被移动、删除，或地址输入有误。",
     "returnHome": "返回首页",
     "title": "没有找到这个页面"
+  },
+  "settings": {
+    "appearance": {
+      "description": "选择应用使用的颜色主题。"
+    },
+    "description": "管理应用偏好和版本更新。",
+    "language": {
+      "description": "选择界面显示语言。"
+    },
+    "tabs": {
+      "general": "通用",
+      "label": "设置分类",
+      "updates": "更新"
+    },
+    "title": "设置",
+    "updates": {
+      "available": {
+        "description": "确认后将打开 GitHub Release 下载页面。",
+        "title": "发现新版本 {{version}}"
+      },
+      "check": "检查更新",
+      "checking": "正在检查…",
+      "currentVersion": "当前版本：{{version}}",
+      "description": "手动检查 GitHub Release 中是否有可用的新版本。",
+      "desktopOnly": {
+        "description": "请在桌面应用中检查更新。",
+        "title": "仅桌面应用支持"
+      },
+      "download": "下载更新",
+      "error": {
+        "invalid-current-version": "当前应用版本格式无效。",
+        "invalid-response": "更新服务返回了无效信息。",
+        "network": "无法连接更新服务，请稍后重试。",
+        "open-release": "无法打开下载页面，请手动访问 GitHub Releases。",
+        "rate-limited": "更新检查过于频繁，请稍后重试。",
+        "title": "检查更新失败"
+      },
+      "title": "应用更新",
+      "upToDate": {
+        "description": "当前已是最新版本。",
+        "title": "已是最新版本"
+      }
+    }
   },
   "sidebar": {
     "description": "显示移动端侧边栏。",
